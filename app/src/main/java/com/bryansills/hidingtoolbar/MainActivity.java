@@ -5,10 +5,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.animation.DecelerateInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
+    private Toolbar mToolbar;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -25,8 +26,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
 
@@ -46,8 +47,41 @@ public class MainActivity extends ActionBarActivity {
         // specify an adapter (see also next example)
         mAdapter = new MainAdapter(items);
         mRecyclerView.setAdapter(mAdapter);
-    }
 
+        mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                switch (newState) {
+                    case RecyclerView.SCROLL_STATE_IDLE:
+                        Log.d("BLARG", "idle");
+                        break;
+                    case RecyclerView.SCROLL_STATE_DRAGGING:
+                        Log.d("BLARG", "dragging");
+                        break;
+                    case RecyclerView.SCROLL_STATE_SETTLING:
+                        Log.d("BLARG", "settling");
+                        break;
+                    default:
+                        Log.wtf("BLARG", "wtf??? unknown scroll state.");
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy > 100) {
+                    mToolbar.animate().translationY(-mToolbar.getBottom()).setDuration(300).setInterpolator(new DecelerateInterpolator());
+                } else if (dy < -100) {
+                    mToolbar.animate().translationY(0).setDuration(300).setInterpolator(new DecelerateInterpolator());
+                }
+
+                Log.d("BLARG", "dx: " + dx + " dy: " + dy);
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
